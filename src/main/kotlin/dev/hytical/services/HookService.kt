@@ -28,12 +28,15 @@ class HookService(private val plugin: AdminGUIPlugin) {
 
 	fun initialize() {
 		// Vault
+		plugin.logger.info("Using Vault as default Economy API")
 		if (Bukkit.getPluginManager().getPlugin("Vault") != null) {
 			val rsp = Bukkit.getServicesManager().getRegistration(Economy::class.java)
 			if (rsp != null) {
 				economy = rsp.provider
 				hasVault = true
-				plugin.logger.info("Vault economy hooked successfully.")
+				plugin.logger.info("Hooked into provider: ${economy?.name}")
+			} else {
+				plugin.logger.severe("Vault not found, economy features will not work!")
 			}
 		}
 

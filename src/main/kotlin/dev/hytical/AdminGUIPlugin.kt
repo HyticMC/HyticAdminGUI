@@ -101,7 +101,7 @@ class AdminGUIPlugin : JavaPlugin() {
 			appendLine(" &8--------------------------------------")
 			appendLine()
 		}
-		Bukkit.getConsoleSender().sendMessage {
+		audiences.console().sendMessage {
 			LegacyComponentSerializer.legacyAmpersand().deserialize(message)
 		}
 	}

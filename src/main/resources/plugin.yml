@@ -1,4 +1,4 @@
-name: Admin-GUI
+name: AdminGUIReloaded
 version: ${project.version}
 main: dev.hytical.AdminGUIPlugin
 api-version: 1.13
