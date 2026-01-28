@@ -9,11 +9,9 @@ import dev.hytical.services.HookService
 import dev.hytical.services.MessageService
 import dev.hytical.services.PunishmentService
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URI
 
 /**
  * AdminGUI Plugin - Easy manage your Minecraft server with Admin GUI
@@ -84,33 +82,28 @@ class AdminGUIPlugin : JavaPlugin() {
 	private fun printStartupInfo() {
 		val message = buildString {
 			appendLine()
+			appendLine(" &dᴀᴅᴍɪɴɢᴜɪʀᴇʟᴏᴀᴅᴇᴅ &7ᴠ${pluginMeta.version}")
+			appendLine(" &8--------------------------------------")
+			appendLine(" &cɪɴꜰᴏʀᴍᴀᴛɪᴏɴ")
+			appendLine("&7   • &fɴᴀᴍᴇ: &bᴀᴅᴍɪɴɢᴜɪʀᴇʟᴏᴀᴅᴇᴅ")
+			appendLine("&7   • &fᴀᴜᴛʜᴏʀ: &bRabbit Company")
+			appendLine("&7   • &fᴍᴀɪɴᴛᴀɪɴᴇʀ: &bʜʏᴛɪᴄᴀʟᴍᴄ")
 			appendLine()
-			appendLine("§8[]===========[§aEnabling §cAdminGUI§8]===========[]")
-			appendLine("§8|")
-			appendLine("§8| §cInformation:")
-			appendLine("§8|")
-			appendLine("§8|   §9Name: §bAdminGUI")
-			appendLine("§8|   §9Developer: §bBlack1_TV")
-			if (newVersion != null) {
-				appendLine("§8|   §9Version: §b${description.version} (FREE) (§6update available§b)")
-			} else {
-				appendLine("§8|   §9Version: §b${description.version} (FREE)")
-			}
-			appendLine("§8|   §9Website: §bhttps://rabbit-company.com")
-			appendLine("§8|")
-			appendLine("§8| §cSponsors:")
-			appendLine("§8|")
-			appendLine("§8|   §9- §6https://rabbitserverlist.com")
-			appendLine("§8|")
-			appendLine("§8| §cSupport:")
-			appendLine("§8|")
-			appendLine("§8|   §9Discord: §bziga.zajc007")
-			appendLine("§8|   §9Mail: §bziga.zajc007@gmail.com")
-			appendLine("§8|   §9Discord: §bhttps://discord.gg/hUNymXX")
-			appendLine("§8|")
-			appendLine("§8[]=========================================[]")
+			appendLine(" &cᴄᴏɴᴛᴀᴄᴛ")
+			appendLine("&7   • &fᴇᴍᴀɪʟ: &bǫʜᴜʏʏ.ᴅᴇᴠ@ɢᴍᴀɪʟ.ᴄᴏᴍ")
+			appendLine("&7   • &fᴅɪѕᴄᴏʀᴅ: &b@qh_hytical")
+			appendLine()
+			appendLine(" &cᴅᴇᴘᴇɴᴅᴇɴᴄɪᴇѕ")
+			appendLine("&7   • &fᴠᴀᴜʟᴛ: ${if (hookService.hasVault) "&aᴇɴᴀʙʟᴇᴅ(Provider: ${hookService.economy?.name ?: "null"})" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine("&7   • &fѕᴜᴘᴇʀᴠᴀɴɪѕʜ: ${if (hookService.hasVanish) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine("&7   • &fᴀᴅᴠᴀɴᴄᴇᴅʙᴀɴ: ${if (hookService.hasAdvancedBan) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine("&7   • &fᴘʟᴀᴄᴇʜᴏʟᴅᴇʀᴀᴘɪ: ${if (hookService.hasPapi) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine(" &8--------------------------------------")
+			appendLine()
 		}
-		Bukkit.getConsoleSender().sendMessage(message)
+		Bukkit.getConsoleSender().sendMessage {
+			LegacyComponentSerializer.legacyAmpersand().deserialize(message)
+		}
 	}
 
 	companion object {
