@@ -66,10 +66,6 @@
                                     <shadedPattern>dev.hytical.libs.triumphgui</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>net.kyori</pattern>
-                                    <shadedPattern>dev.hytical.libs.kyori</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>com.cryptomorin.xseries</pattern>
                                     <shadedPattern>dev.hytical.libs.xseries</shadedPattern>
                                 </relocation>
@@ -132,26 +128,20 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Triumph GUI -->
+        <!-- Triumph GUI - exclude its shaded Adventure, we use Paper's native -->
         <dependency>
             <groupId>dev.triumphteam</groupId>
             <artifactId>triumph-gui</artifactId>
             <version>3.1.11</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-        <!-- Adventure Platform Bukkit -->
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.4</version>
-        </dependency>
-
-        <!-- Adventure MiniMessage -->
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.18.0</version>
-        </dependency>
+        <!-- Adventure is provided by Paper 1.16.5+ natively, no shading needed -->
 
         <!-- XSeries -->
         <dependency>

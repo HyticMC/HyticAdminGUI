@@ -1,23 +1,23 @@
 package dev.hytical.services
 
 import dev.hytical.AdminGUIPlugin
-import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 
 /**
- * Modern messaging service using MiniMessage and Adventure.
+ * Modern messaging service using MiniMessage and Paper's native Adventure.
+ * Note: Paper 1.16.5+ has native Adventure support, no need for adventure-platform-bukkit.
  */
 class MessageService(
 	private val plugin: AdminGUIPlugin,
-	private val hookService: HookService,
-	private val audiences: BukkitAudiences
+	private val hookService: HookService
 ) {
 	private val miniMessage = MiniMessage.miniMessage()
 	private lateinit var lang: YamlConfiguration
@@ -73,7 +73,8 @@ class MessageService(
 
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(prefix + message, combined)
-		audiences.player(player).sendMessage(component)
+		// Use Paper's native Adventure API (Player implements Audience)
+		player.sendMessage(component)
 	}
 
 	/**
@@ -86,7 +87,7 @@ class MessageService(
 		}
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(text, combined)
-		audiences.player(player).sendMessage(component)
+		player.sendMessage(component)
 	}
 
 	/**
@@ -97,12 +98,14 @@ class MessageService(
 		val message = getRaw(key)
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(prefix + message, combined)
+		sender.sendMessage(component)
+	}
 
-		if (sender is Player) {
-			audiences.player(sender).sendMessage(component)
-		} else {
-			audiences.console().sendMessage(component)
-		}
+	/**
+	 * Send a component to the console.
+	 */
+	fun sendConsole(component: Component) {
+		Bukkit.getConsoleSender().sendMessage(component)
 	}
 
 	/**

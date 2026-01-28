@@ -8,7 +8,6 @@ import dev.hytical.services.EconomyService
 import dev.hytical.services.HookService
 import dev.hytical.services.MessageService
 import dev.hytical.services.PunishmentService
-import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
@@ -18,13 +17,10 @@ import org.bukkit.plugin.java.JavaPlugin
  *
  * Kotlin rewrite with modern architecture using:
  * - Triumph GUI for inventory management
- * - Adventure/MiniMessage for messaging
+ * - Paper's native Adventure/MiniMessage for messaging
  * - AdvancedBan for punishments (with Bukkit fallback)
  */
 class AdminGUIPlugin : JavaPlugin() {
-
-	lateinit var audiences: BukkitAudiences
-		private set
 
 	lateinit var hookService: HookService
 		private set
@@ -42,14 +38,11 @@ class AdminGUIPlugin : JavaPlugin() {
 		private set
 
 	override fun onEnable() {
-		// Initialize Adventure audiences
-		audiences = BukkitAudiences.create(this)
-
 		// Initialize services
 		hookService = HookService(this)
 		hookService.initialize()
 
-		messageService = MessageService(this, hookService, audiences)
+		messageService = MessageService(this, hookService)
 		messageService.loadLanguage()
 
 		punishmentService = PunishmentService(this, hookService)
@@ -73,10 +66,7 @@ class AdminGUIPlugin : JavaPlugin() {
 	}
 
 	override fun onDisable() {
-		// Close Adventure audiences
-		if (::audiences.isInitialized) {
-			audiences.close()
-		}
+		// Nothing to clean up - Paper manages Adventure lifecycle
 	}
 
 	private fun printStartupInfo() {
@@ -101,9 +91,9 @@ class AdminGUIPlugin : JavaPlugin() {
 			appendLine(" &8--------------------------------------")
 			appendLine(" ")
 		}
-		audiences.console().sendMessage {
-			LegacyComponentSerializer.legacyAmpersand().deserialize(message)
-		}
+		// Use Paper's native Adventure API for console
+		val component = LegacyComponentSerializer.legacyAmpersand().deserialize(message)
+		Bukkit.getConsoleSender().sendMessage(component)
 	}
 
 	companion object {
