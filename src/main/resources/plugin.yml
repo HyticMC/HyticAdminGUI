@@ -1,11 +1,128 @@
 name: Admin-GUI
 version: ${project.version}
-main: com.rabbitcompany.admingui.AdminGUI
+main: dev.hytical.AdminGUIPlugin
 api-version: 1.13
-authors: [ RabbitCompany ]
+authors: [RabbitCompany]
 description: Easy manage your Minecraft server with Admin GUI
-softdepend: [ Vault, SuperVanish, PremiumVanish ]
+softdepend: [Vault, SuperVanish, PremiumVanish, AdvancedBan, PlaceholderAPI]
 commands:
   admin:
-    usage: /<command>
+    usage: /<command> [player]
     description: Show Admin GUIs
+    permission: admingui.admin
+
+permissions:
+  admingui.admin:
+    description: Access to the Admin GUI
+    default: op
+  admingui.maintenance:
+    description: Bypass maintenance mode
+    default: op
+  admingui.maintenance.manage:
+    description: Toggle maintenance mode
+    default: op
+  admingui.heal:
+    description: Heal yourself
+    default: op
+  admingui.heal.other:
+    description: Heal other players
+    default: op
+  admingui.feed:
+    description: Feed yourself
+    default: op
+  admingui.feed.other:
+    description: Feed other players
+    default: op
+  admingui.gamemode:
+    description: Change your gamemode
+    default: op
+  admingui.gamemode.other:
+    description: Change other players gamemode
+    default: op
+  admingui.god:
+    description: Toggle god mode for yourself
+    default: op
+  admingui.god.other:
+    description: Toggle god mode for others
+    default: op
+  admingui.potions:
+    description: Apply potions to yourself
+    default: op
+  admingui.potions.other:
+    description: Apply potions to others
+    default: op
+  admingui.spawner:
+    description: Spawn entities on yourself
+    default: op
+  admingui.spawner.other:
+    description: Spawn entities on others
+    default: op
+  admingui.kill:
+    description: Kill yourself
+    default: op
+  admingui.kill.other:
+    description: Kill other players
+    default: op
+  admingui.burn:
+    description: Set yourself on fire
+    default: op
+  admingui.burn.other:
+    description: Set others on fire
+    default: op
+  admingui.lightning:
+    description: Strike lightning on yourself
+    default: op
+  admingui.lightning.other:
+    description: Strike lightning on others
+    default: op
+  admingui.firework:
+    description: Spawn firework on yourself
+    default: op
+  admingui.firework.other:
+    description: Spawn firework on others
+    default: op
+  admingui.money:
+    description: Manage your money
+    default: op
+  admingui.money.other:
+    description: Manage other players money
+    default: op
+  admingui.vanish:
+    description: Toggle vanish for yourself
+    default: op
+  admingui.vanish.other:
+    description: Toggle vanish for others
+    default: op
+  admingui.teleport:
+    description: Teleport to players
+    default: op
+  admingui.teleport.other:
+    description: Teleport players to you
+    default: op
+  admingui.inventory:
+    description: View and manage player inventories
+    default: op
+  admingui.info:
+    description: View player information
+    default: op
+  admingui.time:
+    description: Change world time
+    default: op
+  admingui.weather:
+    description: Change world weather
+    default: op
+  admingui.kick.other:
+    description: Kick other players
+    default: op
+  admingui.kick.bypass:
+    description: Cannot be kicked by AdminGUI
+    default: op
+  admingui.ban:
+    description: Ban players
+    default: op
+  admingui.ban.bypass:
+    description: Cannot be banned by AdminGUI
+    default: op
+  admingui.fakeop:
+    description: Fake op message
+    default: op
