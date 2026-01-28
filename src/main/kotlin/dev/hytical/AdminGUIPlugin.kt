@@ -81,7 +81,7 @@ class AdminGUIPlugin : JavaPlugin() {
 
 	private fun printStartupInfo() {
 		val message = buildString {
-			appendLine()
+			appendLine(" ")
 			appendLine(" &dᴀᴅᴍɪɴɢᴜɪʀᴇʟᴏᴀᴅᴇᴅ &7ᴠ${pluginMeta.version}")
 			appendLine(" &8--------------------------------------")
 			appendLine(" &cɪɴꜰᴏʀᴍᴀᴛɪᴏɴ")
@@ -94,12 +94,13 @@ class AdminGUIPlugin : JavaPlugin() {
 			appendLine("&7   • &fᴅɪѕᴄᴏʀᴅ: &b@qh_hytical")
 			appendLine()
 			appendLine(" &cᴅᴇᴘᴇɴᴅᴇɴᴄɪᴇѕ")
-			appendLine("&7   • &fᴠᴀᴜʟᴛ: ${if (hookService.hasVault) "&aᴇɴᴀʙʟᴇᴅ(Provider: ${hookService.economy?.name ?: "null"})" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine("&7   • &fᴠᴀᴜʟᴛ: ${if (hookService.hasVault) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
+			appendLine("&7   - &fᴇᴄᴏɴᴏᴍʏ ᴘʀᴏᴠɪᴅᴇʀ: &a${hookService.economy?.name ?: "&cɴᴜʟʟ"}")
 			appendLine("&7   • &fѕᴜᴘᴇʀᴠᴀɴɪѕʜ: ${if (hookService.hasVanish) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
 			appendLine("&7   • &fᴀᴅᴠᴀɴᴄᴇᴅʙᴀɴ: ${if (hookService.hasAdvancedBan) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
 			appendLine("&7   • &fᴘʟᴀᴄᴇʜᴏʟᴅᴇʀᴀᴘɪ: ${if (hookService.hasPapi) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
 			appendLine(" &8--------------------------------------")
-			appendLine()
+			appendLine(" ")
 		}
 		audiences.console().sendMessage {
 			LegacyComponentSerializer.legacyAmpersand().deserialize(message)
