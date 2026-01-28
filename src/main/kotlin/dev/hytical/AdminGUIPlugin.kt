@@ -95,7 +95,6 @@ class AdminGUIPlugin : JavaPlugin() {
 			appendLine()
 			appendLine(" &cᴅᴇᴘᴇɴᴅᴇɴᴄɪᴇѕ")
 			appendLine("&7   • &fᴠᴀᴜʟᴛ: ${if (hookService.hasVault) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
-			appendLine("&7   - &fᴇᴄᴏɴᴏᴍʏ ᴘʀᴏᴠɪᴅᴇʀ: &a${hookService.economy?.name ?: "&cɴᴜʟʟ"}")
 			appendLine("&7   • &fѕᴜᴘᴇʀᴠᴀɴɪѕʜ: ${if (hookService.hasVanish) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
 			appendLine("&7   • &fᴀᴅᴠᴀɴᴄᴇᴅʙᴀɴ: ${if (hookService.hasAdvancedBan) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
 			appendLine("&7   • &fᴘʟᴀᴄᴇʜᴏʟᴅᴇʀᴀᴘɪ: ${if (hookService.hasPapi) "&aᴇɴᴀʙʟᴇᴅ" else "&cɴᴏᴛ ꜰᴏᴜɴᴅ"}")
