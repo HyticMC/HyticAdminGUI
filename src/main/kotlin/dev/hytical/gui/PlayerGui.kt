@@ -11,9 +11,6 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Player self-management GUI.
- */
 class PlayerGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -27,10 +24,8 @@ class PlayerGui(
 			.disableAllInteractions()
 			.create()
 
-		// Fill background
 		fillBackground(gui)
 
-		// Player info - slot 5 (0-indexed: 4)
 		val infoLore = buildInfoLore(player)
 		val playerHead = ItemBuilder.skull()
 			.owner(player)
@@ -39,7 +34,6 @@ class PlayerGui(
 			.asGuiItem { it.isCancelled = true }
 		gui.setItem(4, playerHead)
 
-		// Heal - slot 11 (0-indexed: 10)
 		addPermissionItem(
 			gui, 10, player, "admingui.heal",
 			XMaterial.GOLDEN_APPLE, "player_heal"
@@ -50,7 +44,6 @@ class PlayerGui(
 			player.closeInventory()
 		}
 
-		// Feed - slot 13 (0-indexed: 12)
 		addPermissionItem(
 			gui, 12, player, "admingui.feed",
 			XMaterial.COOKED_BEEF, "player_feed"
@@ -60,13 +53,10 @@ class PlayerGui(
 			player.closeInventory()
 		}
 
-		// Gamemode - slot 15 (0-indexed: 14)
 		addGamemodeItem(gui, 14, player)
 
-		// God mode - slot 17 (0-indexed: 16)
 		addGodModeItem(gui, 16, player)
 
-		// Potions - slot 19 (0-indexed: 18)
 		addPermissionItem(
 			gui, 18, player, "admingui.potions",
 			XMaterial.POTION, "player_potions"
@@ -74,7 +64,6 @@ class PlayerGui(
 			PotionsGui(plugin, messageService).open(player, player)
 		}
 
-		// Spawner - slot 21 (0-indexed: 20)
 		addPermissionItem(
 			gui, 20, player, "admingui.spawner",
 			XMaterial.SPAWNER, "player_spawner"
@@ -82,7 +71,6 @@ class PlayerGui(
 			SpawnerGui(plugin, messageService).open(player, player)
 		}
 
-		// Kill - slot 23 (0-indexed: 22)
 		addPermissionItem(
 			gui, 22, player, "admingui.kill",
 			XMaterial.DIAMOND_SWORD, "player_kill"
@@ -91,7 +79,6 @@ class PlayerGui(
 			messageService.send(player, "message_kill")
 		}
 
-		// Burn - slot 25 (0-indexed: 24)
 		addPermissionItem(
 			gui, 24, player, "admingui.burn",
 			XMaterial.FLINT_AND_STEEL, "player_burn"
@@ -100,7 +87,6 @@ class PlayerGui(
 			messageService.send(player, "message_burn")
 		}
 
-		// Lightning - slot 27 (0-indexed: 26)
 		addPermissionItem(
 			gui, 26, player, "admingui.lightning",
 			XMaterial.TRIDENT, "player_lightning"
@@ -108,7 +94,6 @@ class PlayerGui(
 			player.world.strikeLightning(player.location)
 		}
 
-		// Firework - slot 29 (0-indexed: 28)
 		addPermissionItem(
 			gui, 28, player, "admingui.firework",
 			XMaterial.FIREWORK_ROCKET, "player_firework"
@@ -116,7 +101,6 @@ class PlayerGui(
 			FireworkUtil.createRandom(player)
 		}
 
-		// Money - slot 31 (0-indexed: 30)
 		addPermissionItem(
 			gui, 30, player, "admingui.money",
 			XMaterial.PAPER, "player_money"
@@ -124,10 +108,8 @@ class PlayerGui(
 			MoneyGui(plugin, messageService).open(player, player)
 		}
 
-		// Vanish - slot 33 (0-indexed: 32)
 		addVanishItem(gui, 32, player)
 
-		// Back - slot 45 (0-indexed: 44)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("player_back")) {
 			MainGui(plugin, messageService).open(player)
 		}
@@ -282,9 +264,6 @@ class PlayerGui(
 	}
 }
 
-/**
- * Utility for creating random fireworks.
- */
 object FireworkUtil {
 	fun createRandom(player: Player) {
 		val world = player.world

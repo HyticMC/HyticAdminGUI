@@ -10,9 +10,6 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Main Admin GUI menu.
- */
 class MainGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -25,13 +22,11 @@ class MainGui(
 			.disableAllInteractions()
 			.create()
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 27) {
 			gui.setItem(i, filler)
 		}
 
-		// Player head - slot 12 (0-indexed: 11)
 		GuiManager.setTarget(player, player)
 		val playerTitle = messageService.getRaw("main_player").replace("{player}", player.name)
 		val playerHead = ItemBuilder.skull()
@@ -43,7 +38,6 @@ class MainGui(
 			}
 		gui.setItem(11, playerHead)
 
-		// World - slot 14 (0-indexed: 13)
 		val worldItem = createClickableItem(
 			XMaterial.GRASS_BLOCK,
 			messageService.getRaw("main_world")
@@ -52,7 +46,6 @@ class MainGui(
 		}
 		gui.setItem(13, worldItem)
 
-		// Players - slot 16 (0-indexed: 15)
 		val randomPlayer = Bukkit.getOnlinePlayers().firstOrNull() ?: player
 		val playersHead = ItemBuilder.skull()
 			.owner(randomPlayer)
@@ -62,7 +55,6 @@ class MainGui(
 			}
 		gui.setItem(15, playersHead)
 
-		// Maintenance mode - slot 19 (0-indexed: 18)
 		val maintenanceMaterial = if (GuiManager.maintenanceMode) {
 			XMaterial.GLOWSTONE_DUST
 		} else {
@@ -76,7 +68,6 @@ class MainGui(
 				GuiManager.maintenanceMode = !GuiManager.maintenanceMode
 				if (GuiManager.maintenanceMode) {
 					messageService.send(player, "message_maintenance_enabled")
-					// Kick non-exempt players
 					Bukkit.getOnlinePlayers()
 						.filter { !it.isOp && !it.hasPermission("admingui.maintenance") }
 						.forEach { it.kickPlayer(messageService.getRaw("prefix") + messageService.getRaw("message_maintenance")) }
@@ -91,7 +82,6 @@ class MainGui(
 		}
 		gui.setItem(18, maintenanceItem)
 
-		// Quit - slot 27 (0-indexed: 26)
 		val quitItem = createClickableItem(
 			XMaterial.REDSTONE_BLOCK,
 			messageService.getRaw("main_quit")

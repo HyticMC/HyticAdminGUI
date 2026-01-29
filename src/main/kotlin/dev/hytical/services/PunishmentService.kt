@@ -5,18 +5,11 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
 
-/**
- * Punishment service with AdvancedBan primary and Bukkit fallback.
- */
 class PunishmentService(
 	private val plugin: AdminGUIPlugin,
 	private val hookService: HookService
 ) {
 
-	/**
-	 * Ban a player with reason and duration.
-	 * Returns true if successful.
-	 */
 	fun ban(playerName: String, reason: String, until: Date?): Boolean {
 		if (hookService.hasAdvancedBan) {
 			return banWithAdvancedBan(playerName, reason, until)
@@ -30,20 +23,18 @@ class PunishmentService(
 			val getInstance = punishmentManager.getMethod("get")
 			val instance = getInstance.invoke(null)
 
-			// Calculate duration in milliseconds from now
 			val durationMs = if (until != null) {
 				until.time - System.currentTimeMillis()
 			} else {
-				-1L // Permanent
+				-1L
 			}
 
 			val durationStr = if (durationMs > 0) {
 				formatDuration(durationMs)
 			} else {
-				"" // Permanent ban
+				""
 			}
 
-			// Use command-based ban for simplicity
 			Bukkit.dispatchCommand(
 				Bukkit.getConsoleSender(),
 				if (durationStr.isNotEmpty()) {
@@ -61,7 +52,6 @@ class PunishmentService(
 
 	private fun banWithBukkit(playerName: String, reason: String, until: Date?): Boolean {
 		return try {
-			// Use command-based banning for maximum compatibility across Paper versions
 			val command = if (until == null) {
 				"ban $playerName $reason"
 			} else {
@@ -75,16 +65,10 @@ class PunishmentService(
 		}
 	}
 
-	/**
-	 * Kick a player with reason.
-	 */
 	fun kick(player: Player, reason: String) {
 		player.kickPlayer(reason)
 	}
 
-	/**
-	 * Format duration in milliseconds to AdvancedBan format (e.g., "1d2h30m").
-	 */
 	private fun formatDuration(ms: Long): String {
 		val seconds = ms / 1000
 		val minutes = seconds / 60
@@ -101,9 +85,6 @@ class PunishmentService(
 		return if (sb.isEmpty()) "1m" else sb.toString()
 	}
 
-	/**
-	 * Calculate ban expiry date from components.
-	 */
 	fun calculateBanDate(
 		years: Int = 0,
 		months: Int = 0,
@@ -120,9 +101,6 @@ class PunishmentService(
 		return calendar.time
 	}
 
-	/**
-	 * Format ban reason with expiry information.
-	 */
 	fun formatBanReason(reasonKey: String, until: Date, messageService: MessageService): String {
 		val reason = messageService.getRaw("ban") + messageService.getRaw(reasonKey)
 
@@ -140,3 +118,4 @@ class PunishmentService(
 		return reason + "\n" + dateStr
 	}
 }
+

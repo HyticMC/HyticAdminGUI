@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * World settings GUI.
- */
 class WorldGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -24,7 +21,6 @@ class WorldGui(
 			.disableAllInteractions()
 			.create()
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 27) {
 			gui.setItem(i, filler)
@@ -32,7 +28,6 @@ class WorldGui(
 
 		val world = player.world
 
-		// Time toggle - slot 11 (0-indexed: 10)
 		if (player.hasPermission("admingui.time")) {
 			val isDay = world.time < 13000
 			val (material, nameKey) = if (isDay) {
@@ -53,7 +48,6 @@ class WorldGui(
 			gui.setItem(10, createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission")))
 		}
 
-		// Weather - slot 13 (0-indexed: 12)
 		if (player.hasPermission("admingui.weather")) {
 			val (material, nameKey, nextAction) = when {
 				world.isThundering -> Triple(XMaterial.BLUE_TERRACOTTA, "world_thunder", "clear")
@@ -84,7 +78,6 @@ class WorldGui(
 			gui.setItem(12, createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission")))
 		}
 
-		// Back - slot 27 (0-indexed: 26)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("world_back")) {
 			MainGui(plugin, messageService).open(player)
 		}

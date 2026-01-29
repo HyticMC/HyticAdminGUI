@@ -11,9 +11,6 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-/**
- * Main /admin command executor.
- */
 class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCompleter {
 
 	override fun onCommand(
@@ -23,7 +20,7 @@ class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCom
 		args: Array<out String>
 	): Boolean {
 		if (sender !is Player) {
-			sender.sendMessage("This command can only be used by players.")
+			plugin.messageService.send(sender, "only_player_can_use_this_command")
 			return true
 		}
 
@@ -34,13 +31,11 @@ class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCom
 
 		when (args.size) {
 			0 -> {
-				// Open main GUI for self
 				GuiManager.setTarget(sender, sender)
 				MainGui(plugin, plugin.messageService).open(sender)
 			}
 
 			1 -> {
-				// Open target player GUI
 				val targetName = args[0]
 				val target = Bukkit.getPlayer(targetName)
 

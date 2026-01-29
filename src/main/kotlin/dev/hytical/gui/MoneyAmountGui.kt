@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Money amount selection GUI.
- */
 class MoneyAmountGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService,
@@ -46,13 +43,11 @@ class MoneyAmountGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 36) {
 			gui.setItem(i, filler)
 		}
 
-		// Amount buttons
 		amounts.take(35).forEachIndexed { index, amount ->
 			val formattedAmount = plugin.economyService.format(amount.toDouble())
 			val item = ItemBuilder.from(XMaterial.PAPER.parseItem() ?: ItemStack(org.bukkit.Material.PAPER))
@@ -64,7 +59,6 @@ class MoneyAmountGui(
 			gui.setItem(index, item)
 		}
 
-		// Back - slot 36 (0-indexed: 35)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("money_amount_back")) {
 			MoneyGui(plugin, messageService).open(viewer, target)
 		}

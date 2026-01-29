@@ -14,14 +14,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
-/**
- * AdminGUI Plugin - Easy manage your Minecraft server with Admin GUI
- *
- * Kotlin rewrite with modern architecture using:
- * - Triumph GUI for inventory management
- * - Paper's native Adventure/MiniMessage for messaging
- * - AdvancedBan for punishments (with Bukkit fallback)
- */
 class AdminGUIPlugin : JavaPlugin() {
 	lateinit var adventure: BukkitAudiences
 		private set
@@ -42,8 +34,7 @@ class AdminGUIPlugin : JavaPlugin() {
 		private set
 
 	override fun onEnable() {
-		// Initialize services
-		adventure = BukkitAudiences.create(this)
+		adventure = BukkitAudiences.builder(this).build()
 
 		hookService = HookService(this)
 		hookService.initialize()
@@ -54,20 +45,17 @@ class AdminGUIPlugin : JavaPlugin() {
 		punishmentService = PunishmentService(this, hookService)
 		economyService = EconomyService(hookService)
 
-		// Register command
 		getCommand("admin")?.let { command ->
 			val executor = AdminCommand(this)
 			command.setExecutor(executor)
 			command.tabCompleter = executor
 		}
 
-		// Register listeners
 		val pluginManager = Bukkit.getPluginManager()
 		pluginManager.registerEvents(PlayerDamageListener(), this)
 		pluginManager.registerEvents(PlayerJoinListener(this), this)
 		pluginManager.registerEvents(PlayerLoginListener(this), this)
 
-		// Print startup message
 		printStartupInfo()
 	}
 

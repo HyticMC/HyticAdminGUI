@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Player inventory viewer GUI.
- */
 class InventoryViewerGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -33,7 +30,6 @@ class InventoryViewerGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Copy target's inventory contents (slots 0-35)
 		val contents = target.inventory.contents
 		for (i in 0 until minOf(36, contents.size)) {
 			val item = contents[i]
@@ -42,7 +38,6 @@ class InventoryViewerGui(
 			}
 		}
 
-		// Copy armor contents (slots 36-39)
 		val armor = target.inventory.armorContents
 		for (i in 0 until armor.size) {
 			val item = armor[i]
@@ -51,26 +46,22 @@ class InventoryViewerGui(
 			}
 		}
 
-		// Control bar (slots 41-53)
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 41 until 54) {
 			gui.setItem(i, filler)
 		}
 
-		// Refresh - slot 46 (0-indexed: 45)
 		val refreshItem = createClickableItem(XMaterial.GREEN_TERRACOTTA, messageService.getRaw("inventory_refresh")) {
-			open(viewer, target) // Refresh
+			open(viewer, target)
 		}
 		gui.setItem(45, refreshItem)
 
-		// Clear - slot 50 (0-indexed: 49)
 		val clearItem = createClickableItem(XMaterial.BLUE_TERRACOTTA, messageService.getRaw("inventory_clear")) {
 			target.inventory.clear()
-			open(viewer, target) // Refresh
+			open(viewer, target)
 		}
 		gui.setItem(49, clearItem)
 
-		// Back - slot 54 (0-indexed: 53)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("inventory_back")) {
 			ActionsGui(plugin, messageService).open(viewer, target)
 		}

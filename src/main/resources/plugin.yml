@@ -5,9 +5,6 @@ api-version: 1.13
 authors: [RabbitCompany]
 description: Easy manage your Minecraft server with Admin GUI
 softdepend: [Vault, SuperVanish, PremiumVanish, AdvancedBan, PlaceholderAPI]
-libraries:
-  - net.kyori:adventure-platform-bukkit:4.3.4
-  - net.kyori:adventure-api:4.17.0
 commands:
   admin:
     usage: /<command> [player]

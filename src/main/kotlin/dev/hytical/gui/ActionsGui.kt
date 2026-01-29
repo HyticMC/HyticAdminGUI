@@ -12,9 +12,6 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Actions GUI for target player.
- */
 class ActionsGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -37,14 +34,12 @@ class ActionsGui(
 		GuiManager.setTarget(viewer, target)
 		fillBackground(gui)
 
-		// Player info - slot 5 (0-indexed: 4)
 		val playerHead = ItemBuilder.skull()
 			.owner(target)
 			.name(messageService.deserialize(messageService.getRaw("actions_info").replace("{player}", target.name)))
 			.asGuiItem { it.isCancelled = true }
 		gui.setItem(4, playerHead)
 
-		// Heal - slot 11 (0-indexed: 10)
 		addPermissionItem(
 			gui, 10, viewer, "admingui.heal.other",
 			XMaterial.GOLDEN_APPLE, "actions_heal"
@@ -55,7 +50,6 @@ class ActionsGui(
 			messageService.send(target, "message_target_player_heal", messageService.playerPlaceholder("player", viewer.name))
 		}
 
-		// Feed - slot 13 (0-indexed: 12)
 		addPermissionItem(
 			gui, 12, viewer, "admingui.feed.other",
 			XMaterial.COOKED_BEEF, "actions_feed"
@@ -65,13 +59,10 @@ class ActionsGui(
 			messageService.send(target, "message_target_player_feed", messageService.playerPlaceholder("player", viewer.name))
 		}
 
-		// Gamemode - slot 15 (0-indexed: 14)
 		addGamemodeItem(gui, 14, viewer, target)
 
-		// God mode - slot 17 (0-indexed: 16)
 		addGodModeItem(gui, 16, viewer, target)
 
-		// Teleport to player - slot 19 (0-indexed: 18)
 		addPermissionItem(
 			gui, 18, viewer, "admingui.teleport",
 			XMaterial.ENDER_PEARL, "actions_teleport_to_player"
@@ -85,7 +76,6 @@ class ActionsGui(
 			)
 		}
 
-		// Potions - slot 21 (0-indexed: 20)
 		addPermissionItem(
 			gui, 20, viewer, "admingui.potions.other",
 			XMaterial.POTION, "actions_potions"
@@ -93,7 +83,6 @@ class ActionsGui(
 			PotionsGui(plugin, messageService).open(viewer, target)
 		}
 
-		// Kill - slot 23 (0-indexed: 22)
 		addPermissionItem(
 			gui, 22, viewer, "admingui.kill.other",
 			XMaterial.DIAMOND_SWORD, "actions_kill_player"
@@ -102,7 +91,6 @@ class ActionsGui(
 			messageService.send(viewer, "message_player_kill", messageService.playerPlaceholder("player", target.name))
 		}
 
-		// Spawner - slot 25 (0-indexed: 24)
 		addPermissionItem(
 			gui, 24, viewer, "admingui.spawner.other",
 			XMaterial.SPAWNER, "actions_spawner"
@@ -110,7 +98,6 @@ class ActionsGui(
 			SpawnerGui(plugin, messageService).open(viewer, target)
 		}
 
-		// Teleport player to you - slot 27 (0-indexed: 26)
 		addPermissionItem(
 			gui, 26, viewer, "admingui.teleport.other",
 			XMaterial.END_CRYSTAL, "actions_teleport_player_to_you"
@@ -124,7 +111,6 @@ class ActionsGui(
 			)
 		}
 
-		// Inventory - slot 29 (0-indexed: 28)
 		addPermissionItem(
 			gui, 28, viewer, "admingui.inventory",
 			XMaterial.BOOK, "actions_inventory"
@@ -132,7 +118,6 @@ class ActionsGui(
 			InventoryViewerGui(plugin, messageService).open(viewer, target)
 		}
 
-		// Burn - slot 31 (0-indexed: 30)
 		addPermissionItem(
 			gui, 30, viewer, "admingui.burn.other",
 			XMaterial.FLINT_AND_STEEL, "actions_burn_player"
@@ -141,10 +126,8 @@ class ActionsGui(
 			messageService.send(viewer, "message_player_burn", messageService.playerPlaceholder("player", target.name))
 		}
 
-		// Vanish - slot 33 (0-indexed: 32)
 		addVanishItem(gui, 32, viewer, target)
 
-		// Lightning - slot 35 (0-indexed: 34)
 		addPermissionItem(
 			gui, 34, viewer, "admingui.lightning.other",
 			XMaterial.TRIDENT, "actions_lightning"
@@ -152,7 +135,6 @@ class ActionsGui(
 			target.world.strikeLightning(target.location)
 		}
 
-		// Firework - slot 37 (0-indexed: 36)
 		addPermissionItem(
 			gui, 36, viewer, "admingui.firework.other",
 			XMaterial.FIREWORK_ROCKET, "actions_firework"
@@ -160,7 +142,6 @@ class ActionsGui(
 			FireworkUtil.createRandom(target)
 		}
 
-		// Fake OP - slot 39 (0-indexed: 38)
 		addPermissionItem(
 			gui, 38, viewer, "admingui.fakeop",
 			XMaterial.PAPER, "actions_fakeop"
@@ -168,7 +149,6 @@ class ActionsGui(
 			Bukkit.broadcastMessage("§7§o[Server: Made ${target.name} a server operator]")
 		}
 
-		// Back - slot 54 (0-indexed: 53)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("actions_back")) {
 			PlayerSettingsGui(plugin, messageService).open(viewer, target)
 		}

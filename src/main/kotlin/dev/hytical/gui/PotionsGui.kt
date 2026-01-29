@@ -11,9 +11,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
-/**
- * Potions effect selection GUI.
- */
 class PotionsGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -53,20 +50,17 @@ class PotionsGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 36) {
 			gui.setItem(i, filler)
 		}
 
-		// Potion effects (slots 0-14)
 		potionEffects.forEachIndexed { index, (nameKey, effectType) ->
 			if (index < 27) {
 				addPotionItem(gui, index, viewer, target, nameKey, effectType)
 			}
 		}
 
-		// Duration control - slot 31 (0-indexed: 30)
 		val duration = GuiManager.getPotionDuration(viewer)
 		val durationItem = ItemBuilder.from(XMaterial.CLOCK.parseItem() ?: ItemStack(org.bukkit.Material.CLOCK))
 			.name(messageService.deserialize(messageService.getRaw("potions_time")))
@@ -79,7 +73,6 @@ class PotionsGui(
 			}
 		gui.setItem(30, durationItem)
 
-		// Remove all - slot 32 (0-indexed: 31)
 		val removeItem =
 			createClickableItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("potions_remove_all")) {
 				for (effect in target.activePotionEffects) {
@@ -102,7 +95,6 @@ class PotionsGui(
 			}
 		gui.setItem(31, removeItem)
 
-		// Level control - slot 33 (0-indexed: 32)
 		val level = GuiManager.getPotionLevel(viewer)
 		val levelItem = ItemBuilder.from(XMaterial.BEACON.parseItem() ?: ItemStack(org.bukkit.Material.BEACON))
 			.name(messageService.deserialize(messageService.getRaw("potions_level")))
@@ -115,7 +107,6 @@ class PotionsGui(
 			}
 		gui.setItem(32, levelItem)
 
-		// Back - slot 36 (0-indexed: 35)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("potions_back")) {
 			if (viewer == target) {
 				PlayerGui(plugin, messageService).open(viewer)

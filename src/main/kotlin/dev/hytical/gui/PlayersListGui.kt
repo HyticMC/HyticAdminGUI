@@ -10,9 +10,6 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Paginated players list GUI.
- */
 class PlayersListGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -27,7 +24,6 @@ class PlayersListGui(
 			.disableAllInteractions()
 			.create()
 
-		// Get sorted online players excluding the viewer
 		val onlinePlayers = Bukkit.getOnlinePlayers()
 			.filter { it.name != player.name }
 			.sortedBy { it.name }
@@ -35,7 +31,6 @@ class PlayersListGui(
 		val currentPage = GuiManager.getPage(player)
 		val totalPages = ((onlinePlayers.size - 1) / pageSize) + 1
 
-		// Calculate page bounds
 		val startIndex = (currentPage - 1) * pageSize
 		val endIndex = minOf(startIndex + pageSize, onlinePlayers.size)
 		val playersOnPage = if (startIndex < onlinePlayers.size) {
@@ -44,7 +39,6 @@ class PlayersListGui(
 			emptyList()
 		}
 
-		// Fill player slots (0-44)
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 45) {
 			if (i < playersOnPage.size) {
@@ -65,12 +59,10 @@ class PlayersListGui(
 			}
 		}
 
-		// Navigation bar (slots 45-53)
 		for (i in 45 until 54) {
 			gui.setItem(i, filler)
 		}
 
-		// Previous button - slot 49 (0-indexed: 48)
 		if (currentPage > 1) {
 			val prevItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("players_previous")) {
 				GuiManager.setPage(player, currentPage - 1)
@@ -79,7 +71,6 @@ class PlayersListGui(
 			gui.setItem(48, prevItem)
 		}
 
-		// Page indicator - slot 50 (0-indexed: 49)
 		if (totalPages > 1) {
 			val pageTitle = messageService.getRaw("players_page") + " $currentPage"
 			val pageItem = ItemBuilder.from(XMaterial.BOOK.parseItem() ?: ItemStack(org.bukkit.Material.BOOK))
@@ -89,7 +80,6 @@ class PlayersListGui(
 			gui.setItem(49, pageItem)
 		}
 
-		// Next button - slot 51 (0-indexed: 50)
 		if (currentPage < totalPages) {
 			val nextItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("players_next")) {
 				GuiManager.setPage(player, currentPage + 1)
@@ -98,7 +88,6 @@ class PlayersListGui(
 			gui.setItem(50, nextItem)
 		}
 
-		// Back button - slot 54 (0-indexed: 53)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("players_back")) {
 			GuiManager.clearPage(player)
 			MainGui(plugin, messageService).open(player)

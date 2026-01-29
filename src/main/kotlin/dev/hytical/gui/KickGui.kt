@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Kick reason selection GUI.
- */
 class KickGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -33,20 +30,17 @@ class KickGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 27) {
 			gui.setItem(i, filler)
 		}
 
-		// Kick reasons
 		addKickReason(gui, 9, viewer, target, XMaterial.WHITE_TERRACOTTA, "kick_hacking")
 		addKickReason(gui, 11, viewer, target, XMaterial.ORANGE_TERRACOTTA, "kick_griefing")
 		addKickReason(gui, 13, viewer, target, XMaterial.MAGENTA_TERRACOTTA, "kick_spamming")
 		addKickReason(gui, 15, viewer, target, XMaterial.LIGHT_BLUE_TERRACOTTA, "kick_advertising")
 		addKickReason(gui, 17, viewer, target, XMaterial.YELLOW_TERRACOTTA, "kick_swearing")
 
-		// Back - slot 27 (0-indexed: 26)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("kick_back")) {
 			PlayerSettingsGui(plugin, messageService).open(viewer, target)
 		}

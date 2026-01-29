@@ -10,9 +10,6 @@ import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Entity spawner GUI.
- */
 class SpawnerGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -90,7 +87,6 @@ class SpawnerGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Add entity spawn eggs
 		entities.take(53).forEachIndexed { index, (nameKey, entityType, material) ->
 			val item = ItemBuilder.from(material.parseItem() ?: ItemStack(org.bukkit.Material.STONE))
 				.name(messageService.deserialize(messageService.getRaw(nameKey)))
@@ -101,7 +97,6 @@ class SpawnerGui(
 			gui.setItem(index, item)
 		}
 
-		// Back - slot 54 (0-indexed: 53)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("spawner_back")) {
 			if (viewer == target) {
 				PlayerGui(plugin, messageService).open(viewer)

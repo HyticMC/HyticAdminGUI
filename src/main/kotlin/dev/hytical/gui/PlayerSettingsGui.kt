@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Player settings GUI for target player.
- */
 class PlayerSettingsGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -27,13 +24,11 @@ class PlayerSettingsGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 27) {
 			gui.setItem(i, filler)
 		}
 
-		// Player info - slot 5 (0-indexed: 4)
 		val infoLore = buildInfoLore(target)
 		val playerHead = ItemBuilder.skull()
 			.owner(target)
@@ -42,13 +37,11 @@ class PlayerSettingsGui(
 			.asGuiItem { it.isCancelled = true }
 		gui.setItem(4, playerHead)
 
-		// Actions - slot 11 (0-indexed: 10)
 		val actionsItem = createClickableItem(XMaterial.DIAMOND_SWORD, messageService.getRaw("players_settings_actions")) {
 			ActionsGui(plugin, messageService).open(viewer, target)
 		}
 		gui.setItem(10, actionsItem)
 
-		// Money - slot 13 (0-indexed: 12)
 		if (viewer.hasPermission("admingui.money.other")) {
 			val moneyItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("players_settings_money")) {
 				MoneyGui(plugin, messageService).open(viewer, target)
@@ -58,7 +51,6 @@ class PlayerSettingsGui(
 			gui.setItem(12, createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission")))
 		}
 
-		// Kick - slot 15 (0-indexed: 14)
 		if (viewer.hasPermission("admingui.kick.other")) {
 			val kickItem =
 				createClickableItem(XMaterial.BLACK_TERRACOTTA, messageService.getRaw("players_settings_kick_player")) {
@@ -69,7 +61,6 @@ class PlayerSettingsGui(
 			gui.setItem(14, createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission")))
 		}
 
-		// Ban - slot 17 (0-indexed: 16)
 		if (viewer.hasPermission("admingui.ban")) {
 			val banItem = createClickableItem(XMaterial.BEDROCK, messageService.getRaw("players_settings_ban_player")) {
 				BanGui(plugin, messageService).open(viewer, target)
@@ -79,7 +70,6 @@ class PlayerSettingsGui(
 			gui.setItem(16, createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission")))
 		}
 
-		// Back - slot 27 (0-indexed: 26)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("players_settings_back")) {
 			PlayersListGui(plugin, messageService).open(viewer)
 		}

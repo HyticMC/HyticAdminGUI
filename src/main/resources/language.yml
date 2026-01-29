@@ -1,4 +1,4 @@
-#       ----------- + AdminGUIReloaded by HyticalMC + -----------   #
+#       ----------- + AdminGUIReloaded by HyticMC + -----------   #
 #                                                           #
 #                      Language (MiniMessage)               #
 #                                                           #
@@ -6,6 +6,8 @@
 #
 #       MiniMessage Color Reference:
 #       https://docs.advntr.dev/minimessage/format.html
+#       Minecraft Hex Gradient Generator:
+#       https://www.birdflop.com/resources/rgb/
 #
 #       Common tags:
 #       <black>, <dark_blue>, <dark_green>, <dark_aqua>,
@@ -29,6 +31,7 @@ prefix: "<gray>[<red>Admin GUI<gray>] "
 #----------------------------------------------------------
 permission: "<red>You don't have permission to do this!"
 is_not_a_player: "<red><player> isn't a player!"
+only_player_can_use_this_command: "<red>This command can only be used by players."
 is_not_a_number: "<red><number> isn't a number!"
 wrong_arguments: "<red>You can only use /admin or /admin <player>"
 vault_required: "<red>Your server doesn't have Vault installed to complete this action!"

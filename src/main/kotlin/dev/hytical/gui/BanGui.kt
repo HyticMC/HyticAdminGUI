@@ -9,9 +9,6 @@ import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-/**
- * Ban duration and reason selection GUI.
- */
 class BanGui(
 	private val plugin: AdminGUIPlugin,
 	private val messageService: MessageService
@@ -33,27 +30,23 @@ class BanGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		// Fill background
 		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
 		for (i in 0 until 36) {
 			gui.setItem(i, filler)
 		}
 
-		// Duration selectors - row 2
 		addDurationItem(gui, 11, viewer, target, "years", GuiManager::getBanYears, GuiManager::setBanYears)
 		addDurationItem(gui, 12, viewer, target, "months", GuiManager::getBanMonths, GuiManager::setBanMonths)
 		addDurationItem(gui, 13, viewer, target, "days", GuiManager::getBanDays, GuiManager::setBanDays)
 		addDurationItem(gui, 14, viewer, target, "hours", GuiManager::getBanHours, GuiManager::setBanHours)
 		addDurationItem(gui, 15, viewer, target, "minutes", GuiManager::getBanMinutes, GuiManager::setBanMinutes)
 
-		// Ban reasons - row 4 (slots 29-33)
 		addBanReason(gui, 29, viewer, target, XMaterial.WHITE_TERRACOTTA, "ban_hacking")
 		addBanReason(gui, 30, viewer, target, XMaterial.ORANGE_TERRACOTTA, "ban_griefing")
 		addBanReason(gui, 31, viewer, target, XMaterial.MAGENTA_TERRACOTTA, "ban_spamming")
 		addBanReason(gui, 32, viewer, target, XMaterial.LIGHT_BLUE_TERRACOTTA, "ban_advertising")
 		addBanReason(gui, 33, viewer, target, XMaterial.YELLOW_TERRACOTTA, "ban_swearing")
 
-		// Back - slot 36 (0-indexed: 35)
 		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("ban_back")) {
 			GuiManager.clearBanConfig(viewer)
 			PlayerSettingsGui(plugin, messageService).open(viewer, target)
