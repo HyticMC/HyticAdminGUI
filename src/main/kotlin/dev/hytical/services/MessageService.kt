@@ -1,11 +1,11 @@
 package dev.hytical.services
 
 import dev.hytical.AdminGUIPlugin
+import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
-import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -17,7 +17,8 @@ import java.io.File
  */
 class MessageService(
 	private val plugin: AdminGUIPlugin,
-	private val hookService: HookService
+	private val hookService: HookService,
+	private val adventure: BukkitAudiences
 ) {
 	private val miniMessage = MiniMessage.miniMessage()
 	private lateinit var lang: YamlConfiguration
@@ -74,7 +75,7 @@ class MessageService(
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(prefix + message, combined)
 		// Use Paper's native Adventure API (Player implements Audience)
-		player.sendMessage(component)
+		adventure.player(player).sendMessage { component }
 	}
 
 	/**
@@ -87,7 +88,7 @@ class MessageService(
 		}
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(text, combined)
-		player.sendMessage(component)
+		adventure.player(player).sendMessage { component }
 	}
 
 	/**
@@ -98,14 +99,14 @@ class MessageService(
 		val message = getRaw(key)
 		val combined = TagResolver.resolver(*resolvers)
 		val component = miniMessage.deserialize(prefix + message, combined)
-		sender.sendMessage(component)
+		adventure.sender(sender).sendMessage { component }
 	}
 
 	/**
 	 * Send a component to the console.
 	 */
 	fun sendConsole(component: Component) {
-		Bukkit.getConsoleSender().sendMessage(component)
+		adventure.console().sendMessage { component }
 	}
 
 	/**

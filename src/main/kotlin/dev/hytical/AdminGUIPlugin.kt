@@ -8,6 +8,8 @@ import dev.hytical.services.EconomyService
 import dev.hytical.services.HookService
 import dev.hytical.services.MessageService
 import dev.hytical.services.PunishmentService
+import net.kyori.adventure.platform.bukkit.BukkitAudiences
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
@@ -21,6 +23,8 @@ import org.bukkit.plugin.java.JavaPlugin
  * - AdvancedBan for punishments (with Bukkit fallback)
  */
 class AdminGUIPlugin : JavaPlugin() {
+	lateinit var adventure: BukkitAudiences
+		private set
 
 	lateinit var hookService: HookService
 		private set
@@ -39,10 +43,12 @@ class AdminGUIPlugin : JavaPlugin() {
 
 	override fun onEnable() {
 		// Initialize services
+		adventure = BukkitAudiences.create(this)
+
 		hookService = HookService(this)
 		hookService.initialize()
 
-		messageService = MessageService(this, hookService)
+		messageService = MessageService(this, hookService, adventure)
 		messageService.loadLanguage()
 
 		punishmentService = PunishmentService(this, hookService)
@@ -66,7 +72,9 @@ class AdminGUIPlugin : JavaPlugin() {
 	}
 
 	override fun onDisable() {
-		// Nothing to clean up - Paper manages Adventure lifecycle
+		if(::adventure.isInitialized) {
+			adventure.close()
+		}
 	}
 
 	private fun printStartupInfo() {
@@ -91,9 +99,8 @@ class AdminGUIPlugin : JavaPlugin() {
 			appendLine(" &8--------------------------------------")
 			appendLine(" ")
 		}
-		// Use Paper's native Adventure API for console
 		val component = LegacyComponentSerializer.legacyAmpersand().deserialize(message)
-		Bukkit.getConsoleSender().sendMessage(component)
+		adventure.console().sendMessage { component }
 	}
 
 	companion object {
