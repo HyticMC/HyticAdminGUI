@@ -2,19 +2,19 @@ package dev.hytical.gui
 
 import com.cryptomorin.xseries.XMaterial
 import de.myzelyam.api.vanish.VanishAPI
-import dev.hytical.AdminGUIPlugin
-import dev.hytical.services.MessageService
+import dev.hytical.ServiceContext
+import dev.hytical.gui.GuiUtils.createClickableItem
+import dev.hytical.gui.GuiUtils.createNoPermissionItem
+import dev.hytical.gui.GuiUtils.fillBackground
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
-import dev.triumphteam.gui.guis.GuiItem
+import net.kyori.adventure.text.Component
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
-class PlayerGui(
-	private val plugin: AdminGUIPlugin,
-	private val messageService: MessageService
-) {
+class PlayerGui(private val ctx: ServiceContext) {
+
+	private val messageService get() = ctx.messageService
 
 	fun open(player: Player) {
 		val title = messageService.getRaw("inventory_player").replace("{player}", player.name)
@@ -24,7 +24,7 @@ class PlayerGui(
 			.disableAllInteractions()
 			.create()
 
-		fillBackground(gui)
+		fillBackground(gui, 45, messageService = messageService)
 
 		val infoLore = buildInfoLore(player)
 		val playerHead = ItemBuilder.skull()
@@ -34,107 +34,70 @@ class PlayerGui(
 			.asGuiItem { it.isCancelled = true }
 		gui.setItem(4, playerHead)
 
-		addPermissionItem(
-			gui, 10, player, "admingui.heal",
-			XMaterial.GOLDEN_APPLE, "player_heal"
-		) {
+		addPermissionItem(gui, 10, player, "admingui.heal", XMaterial.GOLDEN_APPLE, "player_heal") {
 			player.health = player.maxHealth
 			player.fireTicks = 0
 			messageService.send(player, "message_heal")
 			player.closeInventory()
 		}
 
-		addPermissionItem(
-			gui, 12, player, "admingui.feed",
-			XMaterial.COOKED_BEEF, "player_feed"
-		) {
+		addPermissionItem(gui, 12, player, "admingui.feed", XMaterial.COOKED_BEEF, "player_feed") {
 			player.foodLevel = 20
 			messageService.send(player, "message_feed")
 			player.closeInventory()
 		}
 
 		addGamemodeItem(gui, 14, player)
-
 		addGodModeItem(gui, 16, player)
 
-		addPermissionItem(
-			gui, 18, player, "admingui.potions",
-			XMaterial.POTION, "player_potions"
-		) {
-			PotionsGui(plugin, messageService).open(player, player)
+		addPermissionItem(gui, 18, player, "admingui.potions", XMaterial.POTION, "player_potions") {
+			ctx.createPotionsGui().open(player, player)
 		}
 
-		addPermissionItem(
-			gui, 20, player, "admingui.spawner",
-			XMaterial.SPAWNER, "player_spawner"
-		) {
-			SpawnerGui(plugin, messageService).open(player, player)
+		addPermissionItem(gui, 20, player, "admingui.spawner", XMaterial.SPAWNER, "player_spawner") {
+			ctx.createSpawnerGui().open(player, player)
 		}
 
-		addPermissionItem(
-			gui, 22, player, "admingui.kill",
-			XMaterial.DIAMOND_SWORD, "player_kill"
-		) {
+		addPermissionItem(gui, 22, player, "admingui.kill", XMaterial.DIAMOND_SWORD, "player_kill") {
 			player.health = 0.0
 			messageService.send(player, "message_kill")
 		}
 
-		addPermissionItem(
-			gui, 24, player, "admingui.burn",
-			XMaterial.FLINT_AND_STEEL, "player_burn"
-		) {
+		addPermissionItem(gui, 24, player, "admingui.burn", XMaterial.FLINT_AND_STEEL, "player_burn") {
 			player.fireTicks = 500
 			messageService.send(player, "message_burn")
 		}
 
-		addPermissionItem(
-			gui, 26, player, "admingui.lightning",
-			XMaterial.TRIDENT, "player_lightning"
-		) {
+		addPermissionItem(gui, 26, player, "admingui.lightning", XMaterial.TRIDENT, "player_lightning") {
 			player.world.strikeLightning(player.location)
 		}
 
-		addPermissionItem(
-			gui, 28, player, "admingui.firework",
-			XMaterial.FIREWORK_ROCKET, "player_firework"
-		) {
+		addPermissionItem(gui, 28, player, "admingui.firework", XMaterial.FIREWORK_ROCKET, "player_firework") {
 			FireworkUtil.createRandom(player)
 		}
 
-		addPermissionItem(
-			gui, 30, player, "admingui.money",
-			XMaterial.PAPER, "player_money"
-		) {
-			MoneyGui(plugin, messageService).open(player, player)
+		addPermissionItem(gui, 30, player, "admingui.money", XMaterial.PAPER, "player_money") {
+			ctx.createMoneyGui().open(player, player)
 		}
 
 		addVanishItem(gui, 32, player)
 
-		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("player_back")) {
-			MainGui(plugin, messageService).open(player)
+		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("player_back"), messageService) {
+			ctx.createMainGui().open(player)
 		}
 		gui.setItem(44, backItem)
 
 		gui.open(player)
 	}
 
-	private fun fillBackground(gui: Gui) {
-		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
-		for (i in 0 until 45) {
-			gui.setItem(i, filler)
+	private fun buildInfoLore(player: Player): List<Component> = buildList {
+		add(messageService.deserialize("<yellow>Health: ${player.health.toInt()}"))
+		add(messageService.deserialize("<gray>Food: ${player.foodLevel}"))
+		if (ctx.hookService.hasVault) {
+			val balance = ctx.economyService.format(ctx.economyService.getBalance(player))
+			add(messageService.deserialize("<green>Money: $balance"))
 		}
-	}
-
-	private fun buildInfoLore(player: Player): List<net.kyori.adventure.text.Component> {
-		val lore = mutableListOf<net.kyori.adventure.text.Component>()
-		lore.add(messageService.deserialize("<yellow>Health: ${player.health.toInt()}"))
-		lore.add(messageService.deserialize("<gray>Food: ${player.foodLevel}"))
-		if (plugin.hookService.hasVault) {
-			val balance = plugin.economyService.format(plugin.economyService.getBalance(player))
-			lore.add(messageService.deserialize("<green>Money: $balance"))
-		}
-		lore.add(messageService.deserialize("<green>Gamemode: ${player.gameMode.name}"))
-		return lore
+		add(messageService.deserialize("<green>Gamemode: ${player.gameMode.name}"))
 	}
 
 	private fun addPermissionItem(
@@ -146,19 +109,17 @@ class PlayerGui(
 		nameKey: String,
 		onClick: () -> Unit
 	) {
-		if (player.hasPermission(permission)) {
-			val item = createClickableItem(material, messageService.getRaw(nameKey), onClick)
-			gui.setItem(slot, item)
+		val item = if (player.hasPermission(permission)) {
+			createClickableItem(material, messageService.getRaw(nameKey), messageService, onClick)
 		} else {
-			val noPermItem = createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission"))
-			gui.setItem(slot, noPermItem)
+			createNoPermissionItem(messageService)
 		}
+		gui.setItem(slot, item)
 	}
 
 	private fun addGamemodeItem(gui: Gui, slot: Int, player: Player) {
 		if (!player.hasPermission("admingui.gamemode")) {
-			val noPermItem = createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission"))
-			gui.setItem(slot, noPermItem)
+			gui.setItem(slot, createNoPermissionItem(messageService))
 			return
 		}
 
@@ -169,64 +130,54 @@ class PlayerGui(
 			GameMode.SPECTATOR -> Triple(XMaterial.SPLASH_POTION, "player_spectator", GameMode.SURVIVAL)
 		}
 
-		val item = createClickableItem(material, messageService.getRaw(nameKey)) {
+		val item = createClickableItem(material, messageService.getRaw(nameKey), messageService) {
 			player.gameMode = nextMode
-			open(player) // Refresh
+			open(player)
 		}
 		gui.setItem(slot, item)
 	}
 
 	private fun addGodModeItem(gui: Gui, slot: Int, player: Player) {
 		if (!player.hasPermission("admingui.god")) {
-			val noPermItem = createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission"))
-			gui.setItem(slot, noPermItem)
+			gui.setItem(slot, createNoPermissionItem(messageService))
 			return
 		}
 
 		val isGod = player.isInvulnerable || GuiManager.isGodMode(player)
 		val (material, nameKey) = if (isGod) {
-			Pair(XMaterial.RED_TERRACOTTA, "player_god_disabled")
+			XMaterial.RED_TERRACOTTA to "player_god_disabled"
 		} else {
-			Pair(XMaterial.LIME_TERRACOTTA, "player_god_enabled")
+			XMaterial.LIME_TERRACOTTA to "player_god_enabled"
 		}
 
-		val item = createClickableItem(material, messageService.getRaw(nameKey)) {
+		val item = createClickableItem(material, messageService.getRaw(nameKey), messageService) {
 			val newState = !isGod
 			player.isInvulnerable = newState
 			GuiManager.setGodMode(player, newState)
-			if (newState) {
-				messageService.send(player, "message_god_enabled")
-			} else {
-				messageService.send(player, "message_god_disabled")
-			}
-			open(player) // Refresh
+			messageService.send(player, if (newState) "message_god_enabled" else "message_god_disabled")
+			open(player)
 		}
 		gui.setItem(slot, item)
 	}
 
 	private fun addVanishItem(gui: Gui, slot: Int, player: Player) {
 		if (!player.hasPermission("admingui.vanish")) {
-			val noPermItem = createItem(XMaterial.RED_STAINED_GLASS_PANE, messageService.getRaw("permission"))
-			gui.setItem(slot, noPermItem)
+			gui.setItem(slot, createNoPermissionItem(messageService))
 			return
 		}
 
-		val hasVanish = plugin.hookService.hasVanish
-		val isVanished = hasVanish && try {
-			VanishAPI.isInvisible(player)
-		} catch (e: Exception) {
-			false
-		}
+		val hasVanish = ctx.hookService.hasVanish
+		val isVanished = hasVanish && runCatching { VanishAPI.isInvisible(player) }.getOrDefault(false)
 
 		val nameKey = if (isVanished) "player_vanish_disabled" else "player_vanish_enabled"
 
-		val item = createClickableItem(XMaterial.FEATHER, messageService.getRaw(nameKey)) {
+		val item = createClickableItem(XMaterial.FEATHER, messageService.getRaw(nameKey), messageService) {
 			if (!hasVanish) {
 				messageService.send(player, "vanish_required")
 				player.closeInventory()
 				return@createClickableItem
 			}
-			try {
+			runCatching {
 				if (isVanished) {
 					VanishAPI.showPlayer(player)
 					messageService.send(player, "message_visible")
@@ -234,33 +185,12 @@ class PlayerGui(
 					VanishAPI.hidePlayer(player)
 					messageService.send(player, "message_hide")
 				}
-			} catch (e: Exception) {
+			}.onFailure {
 				messageService.send(player, "vanish_required")
 			}
 			player.closeInventory()
 		}
 		gui.setItem(slot, item)
-	}
-
-	private fun createItem(material: XMaterial, name: String): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem { it.isCancelled = true }
-	}
-
-	private fun createClickableItem(
-		material: XMaterial,
-		name: String,
-		onClick: () -> Unit
-	): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem {
-				it.isCancelled = true
-				onClick()
-			}
 	}
 }
 
@@ -270,21 +200,9 @@ object FireworkUtil {
 		val firework = world.spawn(player.location, org.bukkit.entity.Firework::class.java)
 		val meta = firework.fireworkMeta
 		val effect = org.bukkit.FireworkEffect.builder()
-			.with(org.bukkit.FireworkEffect.Type.values().random())
-			.withColor(
-				org.bukkit.Color.fromRGB(
-					(0..255).random(),
-					(0..255).random(),
-					(0..255).random()
-				)
-			)
-			.withFade(
-				org.bukkit.Color.fromRGB(
-					(0..255).random(),
-					(0..255).random(),
-					(0..255).random()
-				)
-			)
+			.with(org.bukkit.FireworkEffect.Type.entries.random())
+			.withColor(org.bukkit.Color.fromRGB((0..255).random(), (0..255).random(), (0..255).random()))
+			.withFade(org.bukkit.Color.fromRGB((0..255).random(), (0..255).random(), (0..255).random()))
 			.flicker((0..1).random() == 1)
 			.trail((0..1).random() == 1)
 			.build()

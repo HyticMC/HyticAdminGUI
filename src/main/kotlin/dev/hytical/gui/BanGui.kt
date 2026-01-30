@@ -1,18 +1,17 @@
 package dev.hytical.gui
 
 import com.cryptomorin.xseries.XMaterial
-import dev.hytical.AdminGUIPlugin
-import dev.hytical.services.MessageService
+import dev.hytical.ServiceContext
+import dev.hytical.gui.GuiUtils.createClickableItem
+import dev.hytical.gui.GuiUtils.fillBackground
+import dev.hytical.gui.GuiUtils.toItemStack
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
-import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
-class BanGui(
-	private val plugin: AdminGUIPlugin,
-	private val messageService: MessageService
-) {
+class BanGui(private val ctx: ServiceContext) {
+
+	private val messageService get() = ctx.messageService
 
 	fun open(viewer: Player, target: Player) {
 		if (!target.isOnline) {
@@ -29,27 +28,21 @@ class BanGui(
 			.create()
 
 		GuiManager.setTarget(viewer, target)
+		fillBackground(gui, 36, messageService = messageService)
 
-		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
-		for (i in 0 until 36) {
-			gui.setItem(i, filler)
+		addDurationItem(gui, 11, viewer, target, "years", MAX_YEARS, GuiManager::getBanYears, GuiManager::setBanYears)
+		addDurationItem(gui, 12, viewer, target, "months", MAX_MONTHS, GuiManager::getBanMonths, GuiManager::setBanMonths)
+		addDurationItem(gui, 13, viewer, target, "days", MAX_DAYS, GuiManager::getBanDays, GuiManager::setBanDays)
+		addDurationItem(gui, 14, viewer, target, "hours", MAX_HOURS, GuiManager::getBanHours, GuiManager::setBanHours)
+		addDurationItem(gui, 15, viewer, target, "minutes", MAX_MINUTES, GuiManager::getBanMinutes, GuiManager::setBanMinutes)
+
+		BAN_REASONS.forEachIndexed { index, (material, reasonKey) ->
+			addBanReason(gui, 29 + index, viewer, target, material, reasonKey)
 		}
 
-		addDurationItem(gui, 11, viewer, target, "years", GuiManager::getBanYears, GuiManager::setBanYears)
-		addDurationItem(gui, 12, viewer, target, "months", GuiManager::getBanMonths, GuiManager::setBanMonths)
-		addDurationItem(gui, 13, viewer, target, "days", GuiManager::getBanDays, GuiManager::setBanDays)
-		addDurationItem(gui, 14, viewer, target, "hours", GuiManager::getBanHours, GuiManager::setBanHours)
-		addDurationItem(gui, 15, viewer, target, "minutes", GuiManager::getBanMinutes, GuiManager::setBanMinutes)
-
-		addBanReason(gui, 29, viewer, target, XMaterial.WHITE_TERRACOTTA, "ban_hacking")
-		addBanReason(gui, 30, viewer, target, XMaterial.ORANGE_TERRACOTTA, "ban_griefing")
-		addBanReason(gui, 31, viewer, target, XMaterial.MAGENTA_TERRACOTTA, "ban_spamming")
-		addBanReason(gui, 32, viewer, target, XMaterial.LIGHT_BLUE_TERRACOTTA, "ban_advertising")
-		addBanReason(gui, 33, viewer, target, XMaterial.YELLOW_TERRACOTTA, "ban_swearing")
-
-		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("ban_back")) {
+		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("ban_back"), messageService) {
 			GuiManager.clearBanConfig(viewer)
-			PlayerSettingsGui(plugin, messageService).open(viewer, target)
+			ctx.createPlayerSettingsGui().open(viewer, target)
 		}
 		gui.setItem(35, backItem)
 
@@ -62,6 +55,7 @@ class BanGui(
 		viewer: Player,
 		target: Player,
 		type: String,
+		maxValue: Int,
 		getter: (Player) -> Int,
 		setter: (Player, Int) -> Unit
 	) {
@@ -71,23 +65,14 @@ class BanGui(
 		val material = if (currentValue == 0) XMaterial.RED_STAINED_GLASS_PANE else XMaterial.CLOCK
 		val amount = if (currentValue == 0) 1 else currentValue.coerceIn(1, 64)
 
-		val item = ItemBuilder.from(material.parseItem() ?: ItemStack(org.bukkit.Material.STONE))
+		val item = ItemBuilder.from(material.toItemStack())
 			.name(messageService.deserialize(messageService.getRaw(nameKey)))
 			.amount(amount)
 			.asGuiItem {
 				it.isCancelled = true
-				// Cycle through values
-				val maxValue = when (type) {
-					"years" -> 10
-					"months" -> 12
-					"days" -> 31
-					"hours" -> 24
-					"minutes" -> 60
-					else -> 10
-				}
 				val newValue = (currentValue + 1) % (maxValue + 1)
 				setter(viewer, newValue)
-				open(viewer, target) // Refresh
+				open(viewer, target)
 			}
 		gui.setItem(slot, item)
 	}
@@ -100,14 +85,14 @@ class BanGui(
 		material: XMaterial,
 		reasonKey: String
 	) {
-		val item = createClickableItem(material, messageService.getRaw(reasonKey)) {
+		val item = createClickableItem(material, messageService.getRaw(reasonKey), messageService) {
 			if (target.hasPermission("admingui.ban.bypass")) {
 				messageService.send(viewer, "message_ban_bypass")
 				viewer.closeInventory()
 				return@createClickableItem
 			}
 
-			val banDate = plugin.punishmentService.calculateBanDate(
+			val banDate = ctx.punishmentService.calculateBanDate(
 				years = GuiManager.getBanYears(viewer),
 				months = GuiManager.getBanMonths(viewer),
 				days = GuiManager.getBanDays(viewer),
@@ -115,11 +100,11 @@ class BanGui(
 				minutes = GuiManager.getBanMinutes(viewer)
 			)
 
-			val banReason = plugin.punishmentService.formatBanReason(reasonKey, banDate, messageService)
+			val banReason = ctx.punishmentService.formatBanReason(reasonKey, banDate, messageService)
 			val prefix = messageService.getRaw("prefix")
 
-			plugin.punishmentService.ban(target.name, banReason, banDate)
-			plugin.punishmentService.kick(target, prefix + banReason)
+			ctx.punishmentService.ban(target.name, banReason, banDate)
+			ctx.punishmentService.kick(target, prefix + banReason)
 
 			messageService.send(viewer, "message_player_ban", messageService.playerPlaceholder("player", target.name))
 			GuiManager.clearBanConfig(viewer)
@@ -128,24 +113,19 @@ class BanGui(
 		gui.setItem(slot, item)
 	}
 
-	private fun createItem(material: XMaterial, name: String): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem { it.isCancelled = true }
-	}
+	private companion object {
+		const val MAX_YEARS = 10
+		const val MAX_MONTHS = 12
+		const val MAX_DAYS = 31
+		const val MAX_HOURS = 24
+		const val MAX_MINUTES = 60
 
-	private fun createClickableItem(
-		material: XMaterial,
-		name: String,
-		onClick: () -> Unit
-	): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem {
-				it.isCancelled = true
-				onClick()
-			}
+		val BAN_REASONS = listOf(
+			XMaterial.WHITE_TERRACOTTA to "ban_hacking",
+			XMaterial.ORANGE_TERRACOTTA to "ban_griefing",
+			XMaterial.MAGENTA_TERRACOTTA to "ban_spamming",
+			XMaterial.LIGHT_BLUE_TERRACOTTA to "ban_advertising",
+			XMaterial.YELLOW_TERRACOTTA to "ban_swearing"
+		)
 	}
 }

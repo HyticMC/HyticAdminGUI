@@ -1,18 +1,15 @@
 package dev.hytical.gui
 
 import com.cryptomorin.xseries.XMaterial
-import dev.hytical.AdminGUIPlugin
-import dev.hytical.services.MessageService
-import dev.triumphteam.gui.builder.item.ItemBuilder
+import dev.hytical.ServiceContext
+import dev.hytical.gui.GuiUtils.createClickableItem
+import dev.hytical.gui.GuiUtils.fillBackground
 import dev.triumphteam.gui.guis.Gui
-import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
-class KickGui(
-	private val plugin: AdminGUIPlugin,
-	private val messageService: MessageService
-) {
+class KickGui(private val ctx: ServiceContext) {
+
+	private val messageService get() = ctx.messageService
 
 	fun open(viewer: Player, target: Player) {
 		if (!target.isOnline) {
@@ -30,19 +27,14 @@ class KickGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
-		for (i in 0 until 27) {
-			gui.setItem(i, filler)
+		fillBackground(gui, 27, messageService = messageService)
+
+		KICK_REASONS.forEach { (slot, material, reasonKey) ->
+			addKickReason(gui, slot, viewer, target, material, reasonKey)
 		}
 
-		addKickReason(gui, 9, viewer, target, XMaterial.WHITE_TERRACOTTA, "kick_hacking")
-		addKickReason(gui, 11, viewer, target, XMaterial.ORANGE_TERRACOTTA, "kick_griefing")
-		addKickReason(gui, 13, viewer, target, XMaterial.MAGENTA_TERRACOTTA, "kick_spamming")
-		addKickReason(gui, 15, viewer, target, XMaterial.LIGHT_BLUE_TERRACOTTA, "kick_advertising")
-		addKickReason(gui, 17, viewer, target, XMaterial.YELLOW_TERRACOTTA, "kick_swearing")
-
-		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("kick_back")) {
-			PlayerSettingsGui(plugin, messageService).open(viewer, target)
+		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("kick_back"), messageService) {
+			ctx.createPlayerSettingsGui().open(viewer, target)
 		}
 		gui.setItem(26, backItem)
 
@@ -57,7 +49,7 @@ class KickGui(
 		material: XMaterial,
 		reasonKey: String
 	) {
-		val item = createClickableItem(material, messageService.getRaw(reasonKey)) {
+		val item = createClickableItem(material, messageService.getRaw(reasonKey), messageService) {
 			if (target.hasPermission("admingui.kick.bypass")) {
 				messageService.send(viewer, "message_kick_bypass")
 				viewer.closeInventory()
@@ -66,31 +58,20 @@ class KickGui(
 
 			val prefix = messageService.getRaw("prefix")
 			val kickReason = messageService.getRaw("kick") + messageService.getRaw(reasonKey)
-			plugin.punishmentService.kick(target, prefix + kickReason)
+			ctx.punishmentService.kick(target, prefix + kickReason)
 			messageService.send(viewer, "message_player_kick", messageService.playerPlaceholder("player", target.name))
 			viewer.closeInventory()
 		}
 		gui.setItem(slot, item)
 	}
 
-	private fun createItem(material: XMaterial, name: String): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem { it.isCancelled = true }
-	}
-
-	private fun createClickableItem(
-		material: XMaterial,
-		name: String,
-		onClick: () -> Unit
-	): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem {
-				it.isCancelled = true
-				onClick()
-			}
+	private companion object {
+		val KICK_REASONS = listOf(
+			Triple(9, XMaterial.WHITE_TERRACOTTA, "kick_hacking"),
+			Triple(11, XMaterial.ORANGE_TERRACOTTA, "kick_griefing"),
+			Triple(13, XMaterial.MAGENTA_TERRACOTTA, "kick_spamming"),
+			Triple(15, XMaterial.LIGHT_BLUE_TERRACOTTA, "kick_advertising"),
+			Triple(17, XMaterial.YELLOW_TERRACOTTA, "kick_swearing")
+		)
 	}
 }

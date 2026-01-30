@@ -1,120 +1,75 @@
 package dev.hytical.gui
 
 import com.cryptomorin.xseries.XMaterial
-import dev.hytical.AdminGUIPlugin
-import dev.hytical.services.MessageService
+import dev.hytical.ServiceContext
+import dev.hytical.gui.GuiUtils.createClickableItem
+import dev.hytical.gui.GuiUtils.createItem
+import dev.hytical.gui.GuiUtils.fillBackground
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
-import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
-class PlayersListGui(
-	private val plugin: AdminGUIPlugin,
-	private val messageService: MessageService
-) {
+class PlayersListGui(private val ctx: ServiceContext) {
 
-	private val pageSize = 45
+	private val messageService get() = ctx.messageService
 
-	fun open(player: Player) {
+	fun open(player: Player, page: Int = 0) {
 		val gui = Gui.gui()
 			.title(messageService.getTitle("inventory_players"))
 			.rows(6)
 			.disableAllInteractions()
 			.create()
 
-		val onlinePlayers = Bukkit.getOnlinePlayers()
-			.filter { it.name != player.name }
-			.sortedBy { it.name }
+		fillBackground(gui, TOTAL_SLOTS, messageService = messageService)
 
-		val currentPage = GuiManager.getPage(player)
-		val totalPages = ((onlinePlayers.size - 1) / pageSize) + 1
+		val onlinePlayers = Bukkit.getOnlinePlayers().toList()
+		val totalPages = ((onlinePlayers.size - 1) / PAGE_SIZE).coerceAtLeast(0)
+		val currentPage = page.coerceIn(0, totalPages)
 
-		val startIndex = (currentPage - 1) * pageSize
-		val endIndex = minOf(startIndex + pageSize, onlinePlayers.size)
-		val playersOnPage = if (startIndex < onlinePlayers.size) {
-			onlinePlayers.subList(startIndex, endIndex)
-		} else {
-			emptyList()
+		GuiManager.setPage(player, currentPage)
+
+		val startIndex = currentPage * PAGE_SIZE
+		val endIndex = minOf(startIndex + PAGE_SIZE, onlinePlayers.size)
+
+		onlinePlayers.subList(startIndex, endIndex).forEachIndexed { index, target ->
+			val playerHead = ItemBuilder.skull()
+				.owner(target)
+				.name(messageService.deserialize(messageService.getRaw("players_color").replace("{player}", target.name)))
+				.asGuiItem {
+					it.isCancelled = true
+					ctx.createPlayerSettingsGui().open(player, target)
+				}
+			gui.setItem(index, playerHead)
 		}
 
-		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
-		for (i in 0 until 45) {
-			if (i < playersOnPage.size) {
-				val target = playersOnPage[i]
-				val playerTitle = messageService.getRaw("players_color").replace("{player}", target.name)
-				val playerHead = ItemBuilder.skull()
-					.owner(target)
-					.name(messageService.deserialize(playerTitle))
-					.lore(messageService.deserialize(messageService.getRaw("players_lore")))
-					.asGuiItem {
-						it.isCancelled = true
-						GuiManager.setTarget(player, target)
-						PlayerSettingsGui(plugin, messageService).open(player, target)
-					}
-				gui.setItem(i, playerHead)
-			} else {
-				gui.setItem(i, filler)
+		if (currentPage > 0) {
+			val prevItem = createClickableItem(XMaterial.ARROW, messageService.getRaw("players_previous"), messageService) {
+				open(player, currentPage - 1)
 			}
-		}
-
-		for (i in 45 until 54) {
-			gui.setItem(i, filler)
-		}
-
-		if (currentPage > 1) {
-			val prevItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("players_previous")) {
-				GuiManager.setPage(player, currentPage - 1)
-				open(player)
-			}
-			gui.setItem(48, prevItem)
-		}
-
-		if (totalPages > 1) {
-			val pageTitle = messageService.getRaw("players_page") + " $currentPage"
-			val pageItem = ItemBuilder.from(XMaterial.BOOK.parseItem() ?: ItemStack(org.bukkit.Material.BOOK))
-				.name(messageService.deserialize(pageTitle))
-				.amount(currentPage.coerceIn(1, 64))
-				.asGuiItem { it.isCancelled = true }
-			gui.setItem(49, pageItem)
+			gui.setItem(PREV_SLOT, prevItem)
 		}
 
 		if (currentPage < totalPages) {
-			val nextItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("players_next")) {
-				GuiManager.setPage(player, currentPage + 1)
-				open(player)
+			val nextItem = createClickableItem(XMaterial.ARROW, messageService.getRaw("players_next"), messageService) {
+				open(player, currentPage + 1)
 			}
-			gui.setItem(50, nextItem)
+			gui.setItem(NEXT_SLOT, nextItem)
 		}
 
-		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("players_back")) {
-			GuiManager.clearPage(player)
-			MainGui(plugin, messageService).open(player)
+		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("players_back"), messageService) {
+			ctx.createMainGui().open(player)
 		}
-		gui.setItem(53, backItem)
+		gui.setItem(BACK_SLOT, backItem)
 
 		gui.open(player)
 	}
 
-	private fun createItem(material: XMaterial, name: String): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem { it.isCancelled = true }
-	}
-
-	private fun createClickableItem(
-		material: XMaterial,
-		name: String,
-		onClick: () -> Unit
-	): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem {
-				it.isCancelled = true
-				onClick()
-			}
+	companion object {
+		private const val PAGE_SIZE = 45
+		private const val TOTAL_SLOTS = 54
+		private const val PREV_SLOT = 48
+		private const val NEXT_SLOT = 50
+		private const val BACK_SLOT = 53
 	}
 }

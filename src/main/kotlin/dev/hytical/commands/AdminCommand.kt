@@ -1,9 +1,7 @@
 package dev.hytical.commands
 
-import dev.hytical.AdminGUIPlugin
+import dev.hytical.ServiceContext
 import dev.hytical.gui.GuiManager
-import dev.hytical.gui.MainGui
-import dev.hytical.gui.PlayerSettingsGui
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -11,7 +9,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCompleter {
+class AdminCommand(private val ctx: ServiceContext) : CommandExecutor, TabCompleter {
+
+	private val messageService get() = ctx.messageService
 
 	override fun onCommand(
 		sender: CommandSender,
@@ -20,19 +20,19 @@ class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCom
 		args: Array<out String>
 	): Boolean {
 		if (sender !is Player) {
-			plugin.messageService.send(sender, "only_player_can_use_this_command")
+			messageService.send(sender, "only_player_can_use_this_command")
 			return true
 		}
 
 		if (!sender.hasPermission("admingui.admin")) {
-			plugin.messageService.send(sender, "permission")
+			messageService.send(sender, "permission")
 			return true
 		}
 
 		when (args.size) {
 			0 -> {
 				GuiManager.setTarget(sender, sender)
-				MainGui(plugin, plugin.messageService).open(sender)
+				ctx.createMainGui().open(sender)
 			}
 
 			1 -> {
@@ -40,24 +40,19 @@ class AdminCommand(private val plugin: AdminGUIPlugin) : CommandExecutor, TabCom
 				val target = Bukkit.getPlayer(targetName)
 
 				if (target == null || !target.isOnline) {
-					plugin.messageService.send(
-						sender, "is_not_a_player",
-						plugin.messageService.playerPlaceholder("player", targetName)
-					)
+					messageService.send(sender, "is_not_a_player", messageService.playerPlaceholder("player", targetName))
 					return true
 				}
 
 				GuiManager.setTarget(sender, target)
 				if (sender.name == target.name) {
-					MainGui(plugin, plugin.messageService).open(sender)
+					ctx.createMainGui().open(sender)
 				} else {
-					PlayerSettingsGui(plugin, plugin.messageService).open(sender, target)
+					ctx.createPlayerSettingsGui().open(sender, target)
 				}
 			}
 
-			else -> {
-				plugin.messageService.send(sender, "wrong_arguments")
-			}
+			else -> messageService.send(sender, "wrong_arguments")
 		}
 
 		return true

@@ -1,18 +1,15 @@
 package dev.hytical.gui
 
 import com.cryptomorin.xseries.XMaterial
-import dev.hytical.AdminGUIPlugin
-import dev.hytical.services.MessageService
-import dev.triumphteam.gui.builder.item.ItemBuilder
+import dev.hytical.ServiceContext
+import dev.hytical.gui.GuiUtils.createClickableItem
+import dev.hytical.gui.GuiUtils.fillBackground
 import dev.triumphteam.gui.guis.Gui
-import dev.triumphteam.gui.guis.GuiItem
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
-class MoneyGui(
-	private val plugin: AdminGUIPlugin,
-	private val messageService: MessageService
-) {
+class MoneyGui(private val ctx: ServiceContext) {
+
+	private val messageService get() = ctx.messageService
 
 	fun open(viewer: Player, target: Player) {
 		if (!target.isOnline) {
@@ -21,7 +18,7 @@ class MoneyGui(
 			return
 		}
 
-		if (!plugin.hookService.hasVault) {
+		if (!ctx.hookService.hasVault) {
 			messageService.send(viewer, "vault_required")
 			viewer.closeInventory()
 			return
@@ -36,57 +33,33 @@ class MoneyGui(
 
 		GuiManager.setTarget(viewer, target)
 
-		val filler = createItem(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE, " ")
-		for (i in 0 until 27) {
-			gui.setItem(i, filler)
-		}
+		fillBackground(gui, 27, messageService = messageService)
 
-		val giveItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("money_give")) {
-			MoneyAmountGui(plugin, messageService, MoneyAction.GIVE).open(viewer, target)
+		val giveItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("money_give"), messageService) {
+			ctx.createMoneyAmountGui(MoneyAction.GIVE).open(viewer, target)
 		}
 		gui.setItem(11, giveItem)
 
-		val setItem = createClickableItem(XMaterial.BOOK, messageService.getRaw("money_set")) {
-			MoneyAmountGui(plugin, messageService, MoneyAction.SET).open(viewer, target)
+		val setItem = createClickableItem(XMaterial.BOOK, messageService.getRaw("money_set"), messageService) {
+			ctx.createMoneyAmountGui(MoneyAction.SET).open(viewer, target)
 		}
 		gui.setItem(13, setItem)
 
-		val takeItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("money_take")) {
-			MoneyAmountGui(plugin, messageService, MoneyAction.TAKE).open(viewer, target)
+		val takeItem = createClickableItem(XMaterial.PAPER, messageService.getRaw("money_take"), messageService) {
+			ctx.createMoneyAmountGui(MoneyAction.TAKE).open(viewer, target)
 		}
 		gui.setItem(15, takeItem)
 
-		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("money_back")) {
+		val backItem = createClickableItem(XMaterial.REDSTONE_BLOCK, messageService.getRaw("money_back"), messageService) {
 			if (viewer == target) {
-				PlayerGui(plugin, messageService).open(viewer)
+				ctx.createPlayerGui().open(viewer)
 			} else {
-				PlayerSettingsGui(plugin, messageService).open(viewer, target)
+				ctx.createPlayerSettingsGui().open(viewer, target)
 			}
 		}
 		gui.setItem(26, backItem)
 
 		gui.open(viewer)
-	}
-
-	private fun createItem(material: XMaterial, name: String): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem { it.isCancelled = true }
-	}
-
-	private fun createClickableItem(
-		material: XMaterial,
-		name: String,
-		onClick: () -> Unit
-	): GuiItem {
-		val item = material.parseItem() ?: ItemStack(org.bukkit.Material.STONE)
-		return ItemBuilder.from(item)
-			.name(messageService.deserialize(name))
-			.asGuiItem {
-				it.isCancelled = true
-				onClick()
-			}
 	}
 }
 

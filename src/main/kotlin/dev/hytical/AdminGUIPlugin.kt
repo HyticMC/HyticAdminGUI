@@ -1,68 +1,66 @@
 package dev.hytical
 
 import dev.hytical.commands.AdminCommand
+import dev.hytical.commands.AdminReloadCommand
 import dev.hytical.listeners.PlayerDamageListener
 import dev.hytical.listeners.PlayerJoinListener
 import dev.hytical.listeners.PlayerLoginListener
-import dev.hytical.services.EconomyService
-import dev.hytical.services.HookService
-import dev.hytical.services.MessageService
-import dev.hytical.services.PunishmentService
-import net.kyori.adventure.platform.bukkit.BukkitAudiences
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.TabCompleter
 import org.bukkit.plugin.java.JavaPlugin
 
 class AdminGUIPlugin : JavaPlugin() {
-	lateinit var adventure: BukkitAudiences
-		private set
 
-	lateinit var hookService: HookService
-		private set
+	val serviceContext: ServiceContext by lazy { ServiceContext(this) }
 
-	lateinit var messageService: MessageService
-		private set
-
-	lateinit var punishmentService: PunishmentService
-		private set
-
-	lateinit var economyService: EconomyService
-		private set
+	val adventure get() = serviceContext.adventure
+	val hookService get() = serviceContext.hookService
+	val messageService get() = serviceContext.messageService
+	val punishmentService get() = serviceContext.punishmentService
+	val economyService get() = serviceContext.economyService
 
 	var newVersion: String? = null
 		private set
 
 	override fun onEnable() {
-		adventure = BukkitAudiences.builder(this).build()
+		serviceContext.hookService
+		serviceContext.messageService
 
-		hookService = HookService(this)
-		hookService.initialize()
-
-		messageService = MessageService(this, hookService, adventure)
-		messageService.loadLanguage()
-
-		punishmentService = PunishmentService(this, hookService)
-		economyService = EconomyService(hookService)
-
-		getCommand("admin")?.let { command ->
-			val executor = AdminCommand(this)
-			command.setExecutor(executor)
-			command.tabCompleter = executor
-		}
-
-		val pluginManager = Bukkit.getPluginManager()
-		pluginManager.registerEvents(PlayerDamageListener(), this)
-		pluginManager.registerEvents(PlayerJoinListener(this), this)
-		pluginManager.registerEvents(PlayerLoginListener(this), this)
-
+		registerAdminCommand()
+		registerEvent()
 		printStartupInfo()
 	}
 
 	override fun onDisable() {
-		if(::adventure.isInitialized) {
-			adventure.close()
+		serviceContext.shutdown()
+	}
+
+	private fun registerAdminCommand() {
+		registerCommandExecutor("admin") { AdminCommand(serviceContext) }
+		registerCommandExecutor("areload") { AdminReloadCommand(this) }
+	}
+
+	private inline fun registerCommandExecutor(
+		name: String,
+		crossinline executorFactory: () -> CommandExecutor
+	) {
+		getCommand(name)?.let { command ->
+			val executor = executorFactory()
+			command.setExecutor(executor)
+			if (executor is TabCompleter) {
+				command.tabCompleter = executor
+			}
 		}
+	}
+
+	private fun registerEvent() {
+		val pluginManager = Bukkit.getPluginManager()
+
+		pluginManager.registerEvents(PlayerDamageListener(), this)
+		pluginManager.registerEvents(PlayerJoinListener(this), this)
+		pluginManager.registerEvents(PlayerLoginListener(this), this)
 	}
 
 	private fun printStartupInfo() {

@@ -10,6 +10,10 @@ commands:
     usage: /<command> [player]
     description: Show Admin GUIs
     permission: admingui.admin
+  areload:
+    usage: /areload
+    description: Reload Language
+    permission: admingui.admin
 
 permissions:
   admingui.admin:
