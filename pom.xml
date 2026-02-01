@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dev.hytical</groupId>
-    <artifactId>AdminGUIReloaded</artifactId>
+    <artifactId>HyticAdminGUI</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>AdminGUI</name>
+    <name>HyticAdminGUI</name>
     <description>Easy manage your Minecraft server with Admin GUI</description>
 
     <properties>
