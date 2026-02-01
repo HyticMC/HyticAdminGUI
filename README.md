@@ -1,6 +1,6 @@
-# AdminGUIReloaded
+# HyticAdminGUI
 
-AdminGUIReloaded is a complete rewrite of the existing AdminGUI plugin, designed to provide server administrators with an intuitive graphical interface for server management.
+HyticAdminGUI is a complete rewrite of the existing AdminGUI plugin, designed to provide server administrators with an intuitive graphical interface for server management.
 
 This rewrite aims to modernize the plugin with:
 *   Rewritten from Java to pure Kotlin
